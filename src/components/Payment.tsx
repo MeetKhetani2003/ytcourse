@@ -55,7 +55,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={resetModal}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+              className="absolute inset-0 bg-[#0A0B1A]/85 backdrop-blur-md"
             />
  
             {/* Modal Box */}
@@ -64,12 +64,12 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-md bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-2xl z-10 p-6 md:p-8"
+              className="relative w-full max-w-md bg-[#15172C] border border-white/10 rounded-3xl overflow-hidden shadow-2xl z-10 p-6 md:p-8"
             >
               {/* Close Button */}
               <button
                 onClick={resetModal}
-                className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all cursor-pointer"
+                className="absolute top-4 right-4 p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -81,7 +81,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                     <span className="text-xs text-accent font-display uppercase font-bold tracking-wider">
                       Step 1 of 2
                     </span>
-                    <h3 className="text-xl md:text-2xl font-display font-extrabold text-slate-900">
+                    <h3 className="text-xl md:text-2xl font-display font-extrabold text-white">
                       Enter Details
                     </h3>
                     <p className="text-xs text-secondary-text">
@@ -90,7 +90,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                   </div>
  
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-slate-700">Full Name</label>
+                    <label className="text-xs font-semibold text-white/70">Full Name</label>
                     <input
                       type="text"
                       name="name"
@@ -98,12 +98,12 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                       placeholder="e.g. Rohan Sharma"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="px-4 py-3 rounded-xl glass-input text-slate-900 text-sm"
+                      className="px-4 py-3 rounded-xl glass-input text-white text-sm"
                     />
                   </div>
  
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-slate-700">Email Address</label>
+                    <label className="text-xs font-semibold text-white/70">Email Address</label>
                     <input
                       type="email"
                       name="email"
@@ -111,12 +111,12 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                       placeholder="e.g. rohan@example.com"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="px-4 py-3 rounded-xl glass-input text-slate-900 text-sm"
+                      className="px-4 py-3 rounded-xl glass-input text-white text-sm"
                     />
                   </div>
  
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-slate-700">Phone Number (WhatsApp)</label>
+                    <label className="text-xs font-semibold text-white/70">Phone Number (WhatsApp)</label>
                     <input
                       type="tel"
                       name="phone"
@@ -124,13 +124,13 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                       placeholder="e.g. +91 9876543210"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="px-4 py-3 rounded-xl glass-input text-slate-900 text-sm"
+                      className="px-4 py-3 rounded-xl glass-input text-white text-sm"
                     />
                   </div>
  
                   <button
                     type="submit"
-                    className="w-full mt-4 cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(79,70,229,0.15)] hover:opacity-95 transition-all"
+                    className="w-full mt-4 cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.25)] hover:opacity-95 transition-all"
                   >
                     <span>Proceed to Payment</span>
                     <ArrowRight className="w-4 h-4" />
@@ -145,27 +145,27 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                     <span className="text-xs text-accent font-display uppercase font-bold tracking-wider">
                       Step 2 of 2
                     </span>
-                    <h3 className="text-xl md:text-2xl font-display font-extrabold text-slate-900">
+                    <h3 className="text-xl md:text-2xl font-display font-extrabold text-white">
                       Simulated Payment
                     </h3>
                     <p className="text-xs text-secondary-text">Razorpay Test Gateway Sandbox</p>
                   </div>
  
                   {/* Pricing Overview */}
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-sm">
+                  <div className="p-4 rounded-xl bg-[#0A0B1A] border border-white/5 flex items-center justify-between text-sm">
                     <div>
                       <span className="text-xs text-secondary-text block">Enrollment Cost</span>
-                      <span className="font-semibold text-slate-900">Faceless USA YouTube Masterclass</span>
+                      <span className="font-semibold text-white">Faceless USA YouTube Masterclass</span>
                     </div>
                     <span className="text-xl font-display font-extrabold text-accent">₹21</span>
                   </div>
  
                   {/* Payment Methods tabs */}
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-lg p-1 border border-slate-100">
+                  <div className="grid grid-cols-2 gap-2 bg-[#0A0B1A] rounded-lg p-1 border border-white/5">
                     <button
                       onClick={() => setPaymentMethod("upi")}
                       className={`py-2 px-3 rounded-md text-xs font-display font-bold flex items-center justify-center gap-1.5 transition-all ${
-                        paymentMethod === "upi" ? "bg-white text-accent shadow-sm border border-slate-200/50" : "text-secondary-text"
+                        paymentMethod === "upi" ? "bg-[#15172C] text-accent" : "text-secondary-text"
                       }`}
                     >
                       <Smartphone className="w-4 h-4" />
@@ -174,7 +174,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                     <button
                       onClick={() => setPaymentMethod("card")}
                       className={`py-2 px-3 rounded-md text-xs font-display font-bold flex items-center justify-center gap-1.5 transition-all ${
-                        paymentMethod === "card" ? "bg-white text-accent shadow-sm border border-slate-200/50" : "text-secondary-text"
+                        paymentMethod === "card" ? "bg-[#15172C] text-accent" : "text-secondary-text"
                       }`}
                     >
                       <CreditCard className="w-4 h-4" />
@@ -194,7 +194,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                           type="text"
                           disabled
                           placeholder="Card Details (Disabled in Simulator)"
-                          className="px-3 py-2 rounded-lg glass-input text-xs text-slate-400 cursor-not-allowed text-center"
+                          className="px-3 py-2 rounded-lg glass-input text-xs text-white/50 cursor-not-allowed text-center"
                         />
                       </div>
                     )}
@@ -203,7 +203,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
                   <button
                     onClick={handleProcessPayment}
                     disabled={isProcessing}
-                    className="w-full cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-success to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.15)]"
+                    className="w-full cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-success to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.25)]"
                   >
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
@@ -220,33 +220,33 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
               {/* Step 3: Success Confirmation */}
               {step === "success" && (
                 <div className="flex flex-col items-center text-center gap-4 py-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2 animate-bounce">
+                  <div className="w-16 h-16 rounded-full bg-success/20 border border-success/30 flex items-center justify-center text-success mb-2 animate-bounce">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
  
-                  <span className="text-xs text-emerald-600 font-display uppercase font-extrabold tracking-widest">
+                  <span className="text-xs text-success font-display uppercase font-extrabold tracking-widest">
                     Payment Success
                   </span>
                   
-                  <h3 className="text-2xl font-display font-black text-slate-900">
+                  <h3 className="text-2xl font-display font-black text-white">
                     Welcome to the Masterclass, {formData.name.split(" ")[0]}!
                   </h3>
  
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 text-left flex flex-col gap-2 w-full">
+                  <div className="p-4 rounded-xl bg-[#0A0B1A] border border-white/5 text-xs text-secondary-text text-left flex flex-col gap-2 w-full">
                     <p>
                       <strong>Email:</strong> {formData.email}
                     </p>
                     <p>
                       <strong>Phone:</strong> {formData.phone}
                     </p>
-                    <p className="border-t border-slate-150 pt-2 mt-1">
+                    <p className="border-t border-white/5 pt-2 mt-1">
                       ✓ An activation link and Discord community invite has been dispatched. Please check your inbox (including promotions/spam).
                     </p>
                   </div>
  
                   <button
                     onClick={resetModal}
-                    className="w-full mt-4 cursor-pointer px-6 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 font-display font-semibold rounded-xl transition-all"
+                    className="w-full mt-4 cursor-pointer px-6 py-3 bg-[#0A0B1A] hover:bg-[#0A0B1A]/85 border border-white/10 hover:border-white/20 text-white font-display font-semibold rounded-xl transition-all"
                   >
                     Close & Return to Page
                   </button>
@@ -260,29 +260,29 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
       </AnimatePresence>
  
       {/* Static Payment & Trust Section */}
-      <section className="w-full py-12 bg-slate-50/50 border-t border-slate-100 relative z-10">
+      <section className="w-full py-12 bg-primary-bg border-t border-white/5 relative z-10">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-6">
+          <p className="text-xs text-secondary-text font-semibold uppercase tracking-wider mb-6">
             Supported Checkout Platforms & Gateways
           </p>
           
           {/* Logo row (simulated images / SVG text represent tags) */}
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 opacity-60 hover:opacity-85 transition-opacity duration-300 mb-8">
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">UPI</span>
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">GPAY</span>
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">PHONEPE</span>
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">PAYTM</span>
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">VISA</span>
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">MASTERCARD</span>
-            <span className="text-sm font-display font-black tracking-widest text-slate-500">RUPAY</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">UPI</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">GPAY</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">PHONEPE</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">PAYTM</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">VISA</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">MASTERCARD</span>
+            <span className="text-sm font-display font-black tracking-widest text-white">RUPAY</span>
           </div>
  
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-xs text-slate-400 border-t border-slate-150 pt-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-xs text-secondary-text border-t border-white/5 pt-6">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              <ShieldCheck className="w-5 h-5 text-success" />
               <span>SSL Secured & Verified 256-bit Connections</span>
             </div>
-            <div className="hidden sm:block h-4 w-px bg-slate-200" />
+            <div className="hidden sm:block h-4 w-px bg-white/10" />
             <div>
               <span>Official Razorpay Partner Marketplace Integration</span>
             </div>

@@ -33,15 +33,14 @@ export default function AddToCart() {
     "Live demo: channel setup + video creation",
     "Live Q&A to clear all your doubts",
   ];
-
   return (
     <div className="min-h-screen bg-primary-bg flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-radial-glow font-sans gap-8">
       
       {/* Background glow spots */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full glow-emerald-spot pointer-events-none opacity-30" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full glow-emerald-spot pointer-events-none opacity-50" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full glow-orange-spot pointer-events-none opacity-40" />
 
-      <div className="max-w-5xl w-full relative z-10 glass-card rounded-3xl overflow-hidden border border-slate-200/50 shadow-2xl">
+      <div className="max-w-5xl w-full relative z-10 glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
         
         {/* Main card two-column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12">
@@ -50,7 +49,7 @@ export default function AddToCart() {
           <div className="lg:col-span-6 p-6 md:p-10 flex flex-col justify-between">
             <div>
               {/* Mobile Banner Image - Visible First on Mobile */}
-              <div className="block lg:hidden relative aspect-square w-full rounded-2xl overflow-hidden border border-slate-200/60 mb-6 shadow-sm">
+              <div className="block lg:hidden relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 mb-6 shadow-sm">
                 <Image
                   src="/webinar_banner.jpeg"
                   alt="Webinar Presentation Banner"
@@ -62,20 +61,20 @@ export default function AddToCart() {
               </div>
 
               {/* Headline */}
-              <h1 className="text-xl md:text-2xl font-display font-black text-slate-900 mb-3 leading-snug">
+              <h1 className="text-xl md:text-2xl font-display font-black text-white mb-3 leading-snug">
                 Faceless YouTube Income Masterclass: How Beginners Are Making{" "}
                 <span className="text-gradient-orange">₹1L–₹5L/Month</span> Without Showing Face
               </h1>
 
               {/* Price Tag */}
               <div className="flex items-center gap-2 mb-6">
-                <span className="text-xs text-slate-500 font-semibold uppercase">Launch Fee:</span>
-                <span className="text-sm text-slate-400 line-through">₹1,999</span>
+                <span className="text-xs text-secondary-text font-semibold uppercase">Launch Fee:</span>
+                <span className="text-sm text-white/50 line-through">₹1,999</span>
                 <span className="text-lg font-display font-extrabold text-accent">₹21 Only 🚀</span>
               </div>
 
               {/* Creator Profile Card */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex gap-4 mb-8">
+              <div className="p-4 rounded-2xl bg-secondary-bg/60 border border-white/5 flex gap-4 mb-8">
                 <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-accent shrink-0">
                   <Image
                     src="/instructor.png"
@@ -86,10 +85,10 @@ export default function AddToCart() {
                   />
                 </div>
                 <div>
-                  <h2 className="font-display font-bold text-slate-900 text-sm md:text-base flex items-center gap-1">
+                  <h2 className="font-display font-bold text-white text-sm md:text-base flex items-center gap-1">
                     YT Gyan Abhishek
                   </h2>
-                  <p className="text-xs text-slate-500 leading-relaxed mt-0.5">
+                  <p className="text-xs text-secondary-text leading-relaxed mt-0.5">
                     My Internet Pays My Bills | 180k+ YouTube Family | Helping Beginners Build Income Using Faceless Channels
                   </p>
                 </div>
@@ -98,7 +97,7 @@ export default function AddToCart() {
               {/* Registration Form */}
               <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div className="flex flex-col gap-1">
-                  <label htmlFor="name" className="text-xs font-semibold text-slate-700">
+                  <label htmlFor="name" className="text-xs font-semibold text-white/70">
                     Your Name <span className="text-accent">*</span>
                   </label>
                   <input
@@ -109,12 +108,12 @@ export default function AddToCart() {
                     placeholder="e.g. Ankit Kumar"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl glass-input text-slate-900 text-sm"
+                    className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label htmlFor="email" className="text-xs font-semibold text-slate-700">
+                  <label htmlFor="email" className="text-xs font-semibold text-white/70">
                     Email Address <span className="text-accent">*</span>
                   </label>
                   <input
@@ -125,16 +124,16 @@ export default function AddToCart() {
                     placeholder="e.g. ankit@example.com"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl glass-input text-slate-900 text-sm"
+                    className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label htmlFor="phone" className="text-xs font-semibold text-slate-700">
+                  <label htmlFor="phone" className="text-xs font-semibold text-white/70">
                     WhatsApp Number <span className="text-accent">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none text-xs font-bold text-slate-400">
+                    <div className="absolute left-3.5 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none text-xs font-bold text-white/55">
                       🇮🇳 +91
                     </div>
                     <input
@@ -146,18 +145,18 @@ export default function AddToCart() {
                       placeholder="9876543210"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full pl-16 pr-4 py-3 rounded-xl glass-input text-slate-900 text-sm"
+                      className="w-full pl-16 pr-4 py-3 rounded-xl glass-input text-white text-sm"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                  <p className="text-[10px] text-secondary-text mt-1 flex items-center gap-1">
                     <span>✓ Workshop credentials & updates will be dispatched to your</span>
-                    <span className="font-semibold text-emerald-600">WhatsApp</span>
+                    <span className="font-semibold text-emerald-400">WhatsApp</span>
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full mt-6 cursor-pointer flex justify-center items-center py-4 px-6 bg-gradient-to-r from-cta to-accent hover:from-accent hover:to-cta text-white font-display font-black text-lg rounded-xl shadow-[0_10px_20px_rgba(79,70,229,0.15)] transition-all transform hover:-translate-y-0.5"
+                  className="w-full mt-6 cursor-pointer flex justify-center items-center py-4 px-6 bg-gradient-to-r from-cta to-accent hover:from-accent hover:to-cta text-white font-display font-black text-lg rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.25)] transition-all transform hover:-translate-y-0.5"
                 >
                   Register Now at ₹21
                 </button>
@@ -165,11 +164,11 @@ export default function AddToCart() {
             </div>
 
             {/* Gateway disclaimer logos */}
-            <div className="border-t border-slate-100 pt-6 mt-8 text-center flex flex-col gap-2">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+            <div className="border-t border-white/5 pt-6 mt-8 text-center flex flex-col gap-2">
+              <span className="text-[10px] text-white/45 uppercase tracking-wider block">
                 Secure SSL Encrypted Checkout via Razorpay
               </span>
-              <div className="flex justify-center items-center gap-4 opacity-80 text-xs text-slate-500">
+              <div className="flex justify-center items-center gap-4 opacity-60 text-xs text-white/80">
                 <span>UPI</span>
                 <span>•</span>
                 <span>Cards</span>
@@ -182,10 +181,10 @@ export default function AddToCart() {
           </div>
 
           {/* Right Column: Webinar Details & Learnings */}
-          <div className="lg:col-span-6 bg-slate-50/50 p-6 md:p-10 border-l border-slate-100 flex flex-col justify-between">
+          <div className="lg:col-span-6 bg-secondary-bg/40 p-6 md:p-10 border-l border-white/5 flex flex-col justify-between">
             <div>
               {/* Webinar Image */}
-              <div className="hidden lg:block relative aspect-square w-full rounded-2xl overflow-hidden border border-slate-100 mb-8 shadow-sm group">
+              <div className="hidden lg:block relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 mb-8 shadow-sm group">
                 <Image
                   src="/webinar_banner.jpeg"
                   alt="Webinar Presentation Banner"
@@ -201,11 +200,11 @@ export default function AddToCart() {
                   Masterclass Schedule:
                 </h3>
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2.5 text-slate-800 text-sm font-medium">
+                  <div className="flex items-center gap-2.5 text-white/95 text-sm font-medium">
                     <Calendar className="w-4.5 h-4.5 text-accent" />
                     <span>14th June (Sunday)</span>
                   </div>
-                  <div className="flex items-center gap-2.5 text-slate-800 text-sm font-medium">
+                  <div className="flex items-center gap-2.5 text-white/95 text-sm font-medium">
                     <Clock className="w-4.5 h-4.5 text-accent" />
                     <span>11:00 AM (IST)</span>
                   </div>
@@ -214,14 +213,14 @@ export default function AddToCart() {
 
               {/* Core learnings bullet checklist */}
               <div className="mb-6">
-                <h3 className="text-sm font-display font-extrabold text-slate-900 uppercase tracking-wider mb-4 leading-normal">
+                <h3 className="text-sm font-display font-extrabold text-white uppercase tracking-wider mb-4 leading-normal">
                   In This Masterclass, I’ll Show You the Exact Roadmap to Build & Monetize a Faceless YouTube Channel
                 </h3>
                 
                 <ul className="flex flex-col gap-3">
                   {learnings.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs md:text-sm text-slate-600 leading-relaxed font-sans">
-                      <span className="text-emerald-600 select-none font-sans font-bold">✓</span>
+                    <li key={idx} className="flex items-start gap-2 text-xs md:text-sm text-secondary-text leading-relaxed font-sans">
+                      <span className="text-emerald-400 select-none font-sans font-bold">✓</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -229,11 +228,11 @@ export default function AddToCart() {
               </div>
 
               {/* Contact info support */}
-              <div className="border-t border-slate-100 pt-6">
-                <h3 className="text-xs font-display font-bold text-slate-900 uppercase tracking-wider mb-3">
+              <div className="border-t border-white/5 pt-6">
+                <h3 className="text-xs font-display font-bold text-white uppercase tracking-wider mb-3">
                   Need Help? Contact Creator Support
                 </h3>
-                <div className="flex flex-col sm:flex-row gap-4 text-xs text-slate-500">
+                <div className="flex flex-col sm:flex-row gap-4 text-xs text-secondary-text">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-accent" />
                     <span>contactytgyans@gmail.com</span>
@@ -247,15 +246,15 @@ export default function AddToCart() {
             </div>
 
             {/* Bottom policy links and footer reference */}
-            <div className="border-t border-slate-100 pt-6 mt-8 flex flex-col items-center gap-2">
-              <div className="flex items-center gap-4 text-2xs text-slate-400 font-semibold font-display">
+            <div className="border-t border-white/5 pt-6 mt-8 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-4 text-2xs text-white/40 font-semibold font-display">
                 <Link href="#" className="hover:text-accent transition-colors">Terms & Conditions</Link>
                 <span>•</span>
                 <Link href="#" className="hover:text-accent transition-colors">Privacy Policy</Link>
                 <span>•</span>
                 <Link href="#" className="hover:text-accent transition-colors">Refund Policy</Link>
               </div>
-              <span className="text-[10px] text-slate-400">Powered by CreatorLabs Funnels</span>
+              <span className="text-[10px] text-white/25">Powered by CreatorLabs Funnels</span>
             </div>
 
           </div>
