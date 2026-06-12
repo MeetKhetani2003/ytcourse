@@ -197,7 +197,7 @@ export default function Home() {
           <div className="lg:col-span-6 bg-slate-50/50 p-6 sm:p-10 border-l border-slate-100 flex flex-col justify-between">
             <div>
               {/* Webinar Image */}
-              <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-slate-100 mb-8 shadow-sm group">
+              <div className="hidden lg:block relative aspect-square w-full rounded-2xl overflow-hidden border border-slate-100 mb-8 shadow-sm group">
                 <Image
                   src="/webinar_banner.jpeg"
                   alt="Webinar Presentation Banner"
