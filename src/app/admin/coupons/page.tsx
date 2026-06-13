@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Ticket, Calendar, ToggleLeft, ToggleRight, Trash2, Plus, RefreshCw, Check, AlertCircle } from "lucide-react";
+import { Ticket, Calendar, ToggleLeft, ToggleRight, Trash2, Plus, RefreshCw, Check, AlertCircle, Edit2 } from "lucide-react";
 import { useToast } from "@/components/Providers";
 
 interface Coupon {
@@ -27,6 +27,36 @@ export default function AdminCoupons() {
   const [startDate, setStartDate] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+
+  const formatToDateTimeLocal = (dateString: string) => {
+    if (!dateString) return "";
+    const d = new Date(dateString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const handleEditClick = (coupon: Coupon) => {
+    setEditingCoupon(coupon);
+    setCode(coupon.code);
+    setTitle(coupon.title);
+    setDiscountAmount(coupon.discountAmount.toString());
+    setStartDate(formatToDateTimeLocal(coupon.startDate));
+    setExpiryDate(formatToDateTimeLocal(coupon.expiryDate));
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCoupon(null);
+    setCode("");
+    setTitle("");
+    setDiscountAmount("");
+    setStartDate("");
+    setExpiryDate("");
+  };
 
   async function fetchCoupons() {
     try {
@@ -47,13 +77,7 @@ export default function AdminCoupons() {
     fetchCoupons();
   }, []);
 
-  const handleCreateCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!code || !title || !discountAmount || !startDate || !expiryDate) {
-      toast("All fields are required", "error");
-      return;
-    }
-
+  const handleCreateCoupon = async () => {
     setIsCreating(true);
 
     try {
@@ -64,8 +88,8 @@ export default function AdminCoupons() {
           code: code.trim().toUpperCase(),
           title: title.trim(),
           discountAmount: parseFloat(discountAmount),
-          startDate,
-          expiryDate,
+          startDate: new Date(startDate).toISOString(),
+          expiryDate: new Date(expiryDate).toISOString(),
         }),
       });
 
@@ -87,6 +111,52 @@ export default function AdminCoupons() {
       toast("Connection error. Try again.", "error");
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleUpdateCoupon = async () => {
+    if (!editingCoupon) return;
+    setIsCreating(true);
+
+    try {
+      const res = await fetch(`/api/admin/coupons/${editingCoupon.code}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          discountAmount: parseFloat(discountAmount),
+          startDate: new Date(startDate).toISOString(),
+          expiryDate: new Date(expiryDate).toISOString(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast(`Coupon "${editingCoupon.code}" updated successfully!`, "success");
+        handleCancelEdit();
+        fetchCoupons();
+      } else {
+        toast(data.message || "Failed to update coupon", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      toast("Connection error. Try again.", "error");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code || !title || !discountAmount || !startDate || !expiryDate) {
+      toast("All fields are required", "error");
+      return;
+    }
+    if (editingCoupon) {
+      handleUpdateCoupon();
+    } else {
+      handleCreateCoupon();
     }
   };
 
@@ -154,14 +224,18 @@ export default function AdminCoupons() {
       {/* Grid: Create Form (left) + Coupons Table (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Create Coupon Form Panel (4 cols) */}
+        {/* Create / Edit Coupon Form Panel (4 cols) */}
         <div className="lg:col-span-4 p-5 rounded-2xl bg-[#15172C]/60 border border-white/5 shadow-xl">
           <h3 className="font-display font-extrabold text-white text-base mb-4 flex items-center gap-2 border-b border-white/5 pb-3">
-            <Plus className="w-5 h-5 text-accent" />
-            <span>Create New Coupon</span>
+            {editingCoupon ? (
+              <Edit2 className="w-5 h-5 text-accent" />
+            ) : (
+              <Plus className="w-5 h-5 text-accent" />
+            )}
+            <span>{editingCoupon ? `Edit Coupon: ${editingCoupon.code}` : "Create New Coupon"}</span>
           </h3>
 
-          <form onSubmit={handleCreateCoupon} className="flex flex-col gap-4 text-xs">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs">
             
             <div className="flex flex-col gap-1.5">
               <label className="text-white/70 font-semibold">Coupon Code *</label>
@@ -169,9 +243,12 @@ export default function AdminCoupons() {
                 type="text"
                 placeholder="e.g. SUN1000"
                 required
+                disabled={!!editingCoupon}
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                className="px-3.5 py-2.5 rounded-xl glass-input font-bold tracking-wider"
+                className={`px-3.5 py-2.5 rounded-xl glass-input font-bold tracking-wider ${
+                  editingCoupon ? "opacity-50 cursor-not-allowed bg-white/5" : ""
+                }`}
               />
             </div>
 
@@ -221,20 +298,38 @@ export default function AdminCoupons() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isCreating}
-              className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.2)] disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              {isCreating ? (
-                <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  <span>Save Coupon</span>
-                </>
+            <div className="flex flex-col gap-2">
+              <button
+                type="submit"
+                disabled={isCreating}
+                className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.2)] disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                {isCreating ? (
+                  <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                ) : editingCoupon ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Update Coupon</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    <span>Save Coupon</span>
+                  </>
+                )}
+              </button>
+
+              {editingCoupon && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isCreating}
+                  className="w-full py-2.5 px-4 bg-white/5 hover:bg-white/10 text-white/95 font-semibold text-xs rounded-xl border border-white/5 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  Cancel Edit
+                </button>
               )}
-            </button>
+            </div>
 
           </form>
         </div>
@@ -261,7 +356,7 @@ export default function AdminCoupons() {
                     <th className="pb-3 pr-2">Validity Period</th>
                     <th className="pb-3 pr-2 text-center">Uses</th>
                     <th className="pb-3 pr-2 text-center">Active</th>
-                    <th className="pb-3 text-right">Delete</th>
+                    <th className="pb-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -306,12 +401,22 @@ export default function AdminCoupons() {
                           </button>
                         </td>
                         <td className="py-3.5 text-right">
-                          <button
-                            onClick={() => handleDeleteCoupon(coupon.code)}
-                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex justify-end items-center gap-2">
+                            <button
+                              onClick={() => handleEditClick(coupon)}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-all cursor-pointer"
+                              title="Edit Coupon"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCoupon(coupon.code)}
+                              className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all cursor-pointer"
+                              title="Delete Coupon"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

@@ -29,11 +29,6 @@ export async function POST(req: Request) {
     }
 
     if (now > coupon.expiryDate) {
-      // Dynamic deactivation if expired
-      if (coupon.active) {
-        coupon.active = false;
-        await coupon.save();
-      }
       return NextResponse.json({ valid: false, message: "Coupon has expired" }, { status: 400 });
     }
 
