@@ -1,15 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Menu, X, ArrowRight } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
+import { Menu, X, ArrowRight, User as UserIcon, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 
 interface NavbarProps {
-  onOpenCheckout: () => void;
+  onOpenCheckout?: () => void;
 }
 
+
 export default function Navbar({ onOpenCheckout }: NavbarProps) {
+  const { data: session, status } = useSession();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,26 +25,52 @@ export default function Navbar({ onOpenCheckout }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const navLinks = [
-    { label: "Core Skills", href: "#what-you-will-learn" },
-    { label: "Curriculum", href: "#curriculum-section" },
-    { label: "Results", href: "#results-section" },
-    { label: "Reviews", href: "#testimonials-section" },
-    { label: "FAQ", href: "#faq-section" }
+    { label: "Core Skills", href: "/#what-you-will-learn" },
+    { label: "Curriculum", href: "/#curriculum-section" },
+    { label: "Results", href: "/#results-section" },
+    { label: "Reviews", href: "/#testimonials-section" },
+    { label: "FAQ", href: "/#faq-section" }
   ];
+
+  const hasPurchased = session?.user?.purchasedCourses?.includes("youtube-course");
+  const isAdmin = session?.user?.role === "admin";
+
+  const handleEnrollClick = () => {
+    if (!session) {
+      signIn("google");
+    } else if (hasPurchased) {
+      // already bought, route to course page
+      window.location.href = "/course/youtube-masterclass";
+    } else {
+      if (onOpenCheckout) onOpenCheckout();
+    }
+  };
+
 
   return (
     <nav
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-primary-bg/85 backdrop-blur-md border-b border-white/5 py-4 shadow-lg"
-          : "bg-transparent py-6"
+          ? "bg-[#0A0B1A]/90 backdrop-blur-md border-b border-white/5 py-3 shadow-lg"
+          : "bg-transparent py-5"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
         
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2 text-white font-display font-extrabold text-base md:text-lg">
+        <Link href="/" className="flex items-center gap-2 text-white font-display font-extrabold text-base md:text-lg">
           <div className="p-1.5 rounded-lg bg-red-600 flex items-center justify-center text-white shrink-0">
             <svg
               className="w-4 h-4 fill-current text-white shrink-0"
@@ -49,68 +81,217 @@ export default function Navbar({ onOpenCheckout }: NavbarProps) {
           </div>
           <span className="hidden sm:inline">Faceless USA Masterclass</span>
           <span className="sm:hidden">Faceless USA</span>
-        </a>
+        </Link>
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-8 text-sm font-display font-semibold text-secondary-text">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
               className="hover:text-white transition-colors duration-300"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* Desktop CTA & Session Buttons */}
         <div className="hidden md:flex items-center gap-4">
-          <button
-            onClick={onOpenCheckout}
-            className="cursor-pointer flex items-center justify-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-cta to-accent hover:from-accent hover:to-cta text-white font-display font-bold text-sm rounded-xl transition-all"
-          >
-            <span>Enroll Now</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          
+          {/* Enroll / Go to Course */}
+          {status !== "loading" && (
+            <button
+              onClick={handleEnrollClick}
+              className="cursor-pointer flex items-center justify-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-cta to-accent hover:from-accent hover:to-cta text-white font-display font-bold text-sm rounded-xl transition-all"
+            >
+              <span>{hasPurchased ? "Go To Course" : "Enroll Now"}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* User Session Handler */}
+          {status === "loading" ? (
+            <div className="w-9 h-9 rounded-full bg-white/5 animate-pulse" />
+          ) : session ? (
+            /* User Avatar Dropdown */
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="w-9 h-9 rounded-full overflow-hidden border border-white/20 hover:border-accent transition-colors cursor-pointer"
+              >
+                {session.user.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || "User Avatar"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-secondary-bg flex items-center justify-center text-white text-sm">
+                    <UserIcon className="w-4 h-4" />
+                  </div>
+                )}
+              </button>
+
+              {/* Dropdown Box */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-secondary-bg border border-white/10 rounded-2xl shadow-xl py-2 z-50 text-sm overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-4 py-2.5 border-b border-white/5">
+                    <p className="font-display font-bold text-white truncate text-xs">{session.user.name}</p>
+                    <p className="text-[10px] text-secondary-text truncate">{session.user.email}</p>
+                  </div>
+                  
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4 text-accent" />
+                    <span>My Dashboard</span>
+                  </Link>
+
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      signOut({ callbackUrl: "/" });
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-left cursor-pointer border-t border-white/5 mt-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Continue with Google Login Button */
+            <button
+              onClick={() => signIn("google")}
+              className="cursor-pointer px-4 py-2 bg-secondary-bg hover:bg-secondary-bg/80 border border-white/10 hover:border-white/20 text-white font-display font-bold text-xs rounded-xl transition-all"
+            >
+              Login
+            </button>
+          )}
+
         </div>
 
         {/* Mobile Hamburger Toggle */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 rounded-lg bg-white/5 text-white hover:bg-white/10"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          {session && (
+            <Link
+              href="/dashboard"
+              className="w-8 h-8 rounded-full overflow-hidden border border-white/20"
+            >
+              {session.user.image ? (
+                <img
+                  src={session.user.image}
+                  alt={session.user.name || "Avatar"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-secondary-bg flex items-center justify-center text-white text-xs">
+                  <UserIcon className="w-3.5 h-3.5" />
+                </div>
+              )}
+            </Link>
+          )}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg bg-white/5 text-white hover:bg-white/10 cursor-pointer"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
 
       </div>
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-[73px] bg-secondary-bg border-b border-white/10 p-6 flex flex-col gap-5 shadow-2xl z-40">
-          <div className="flex flex-col gap-4 text-base font-display font-semibold text-secondary-text">
+        <div className="md:hidden fixed inset-x-0 top-[60px] bg-secondary-bg border-b border-white/10 p-5 flex flex-col gap-4 shadow-2xl z-40 text-sm">
+          <div className="flex flex-col gap-3 font-display font-semibold text-secondary-text">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className="hover:text-white transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
 
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              onOpenCheckout();
-            }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl"
-          >
-            <span>Enroll Now</span>
-            <ArrowRight className="w-4.5 h-4.5" />
-          </button>
+          <div className="h-px bg-white/5 my-1" />
+
+          {session && (
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 text-white/80 py-1"
+              >
+                <LayoutDashboard className="w-4 h-4 text-accent" />
+                <span>My Dashboard</span>
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 text-white/80 py-1"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Admin Panel</span>
+                </Link>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleEnrollClick();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl text-xs"
+            >
+              <span>{hasPurchased ? "Go To Course" : "Enroll Now"}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {session ? (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-red-500/10 text-red-400 font-display font-bold rounded-xl text-xs border border-red-500/20"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Log Out</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signIn("google");
+                }}
+                className="w-full flex items-center justify-center py-2 px-4 bg-white/5 border border-white/10 text-white font-display font-bold rounded-xl text-xs"
+              >
+                Login with Google
+              </button>
+            )}
+          </div>
         </div>
       )}
     </nav>

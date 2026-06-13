@@ -1,50 +1,239 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, CreditCard, CheckCircle2, X, ArrowRight, Smartphone } from "lucide-react";
+import { ShieldCheck, Ticket, CheckCircle2, X, ArrowRight, Smartphone, Mail, User } from "lucide-react";
+import { useToast } from "@/components/Providers";
 
 interface PaymentProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Payment({ isOpen, onClose }: PaymentProps) {
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
-  const [step, setStep] = useState<"details" | "payment" | "success">("details");
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card">("upi");
-  const [isProcessing, setIsProcessing] = useState(false);
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+export default function Payment({ isOpen, onClose }: PaymentProps) {
+  const { data: session } = useSession();
+  const { toast } = useToast();
+
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [stateName, setStateName] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [gstin, setGstin] = useState("");
+
+  const [step, setStep] = useState<"details" | "checkout" | "success">("details");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    title: string;
+    discount: number;
+    finalPrice: number;
+  } | null>(null);
+
+  const [isCouponLoading, setIsCouponLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [transactionDetails, setTransactionDetails] = useState<{
+    orderId: string;
+    paymentId: string;
+  } | null>(null);
+
+  // Reset when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setStep("details");
+      setPhone("");
+      setCity("");
+      setStateName("");
+      setPincode("");
+      setGstin("");
+      setCouponCode("");
+      setAppliedCoupon(null);
+      setIsProcessing(false);
+      setTransactionDetails(null);
+    }
+  }, [isOpen]);
+
+  const handleDetailsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone || phone.length < 10) {
+      toast("Please enter a valid 10-digit WhatsApp number", "error");
+      return;
+    }
+    if (!city.trim()) {
+      toast("Please enter your city", "error");
+      return;
+    }
+    if (!stateName.trim()) {
+      toast("Please enter your state", "error");
+      return;
+    }
+    if (!pincode || pincode.length < 6) {
+      toast("Please enter a valid 6-digit PIN code", "error");
+      return;
+    }
+    setStep("checkout");
   };
 
-  const handleDetailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name && formData.email && formData.phone) {
-      setStep("payment");
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast("Please enter a coupon code", "error");
+      return;
+    }
+
+    setIsCouponLoading(true);
+    try {
+      const res = await fetch("/api/coupon/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.valid) {
+        setAppliedCoupon({
+          code: couponCode.trim().toUpperCase(),
+          title: data.title,
+          discount: data.discount,
+          finalPrice: data.finalPrice,
+        });
+        toast(`Coupon "${couponCode.toUpperCase()}" applied successfully!`, "success");
+      } else {
+        toast(data.message || "Invalid or expired coupon", "error");
+        setAppliedCoupon(null);
+      }
+    } catch (err) {
+      console.error(err);
+      toast("Failed to apply coupon. Try again.", "error");
+    } finally {
+      setIsCouponLoading(false);
     }
   };
 
-  const handleProcessPayment = () => {
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast("Coupon removed", "info");
+  };
+
+  const handleProcessPayment = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
+
+    try {
+      // 1. Load Razorpay script
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        toast("Failed to load Razorpay SDK. Check your internet connection.", "error");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 2. Create Order on Backend
+      const orderRes = await fetch("/api/payment/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+          phone,
+          city,
+          stateName,
+          pincode,
+          gstin: gstin || undefined,
+        }),
+      });
+
+      const orderData = await orderRes.json();
+
+      if (!orderRes.ok) {
+        toast(orderData.message || "Failed to initiate payment", "error");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 3. Configure and Open Razorpay Checkout SDK
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SvYRmEIlidySNB",
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "YouTube Masterclass",
+        description: "Faceless YouTube Income Masterclass",
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          // Signature Verification call to API
+          try {
+            const verifyRes = await fetch("/api/payment/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok && verifyData.success) {
+              setTransactionDetails({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+              });
+              toast("Enrollment complete! Welcome aboard.", "success");
+              setStep("success");
+            } else {
+              toast(verifyData.message || "Payment verification failed. Contact support.", "error");
+            }
+          } catch (err) {
+            console.error(err);
+            toast("Connection error during verification. Contact support.", "error");
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: session?.user?.name || "",
+          email: session?.user?.email || "",
+          contact: `+91${phone}`,
+        },
+        theme: {
+          color: "#FF6A00",
+        },
+        modal: {
+          ondismiss: function () {
+            toast("Payment cancelled by user", "info");
+            setIsProcessing(false);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err: any) {
+      console.error(err);
+      toast(err.message || "Something went wrong during payment initialization", "error");
       setIsProcessing(false);
-      setStep("success");
-    }, 2000);
+    }
   };
 
-  const resetModal = () => {
-    setFormData({ name: "", email: "", phone: "" });
-    setStep("details");
-    onClose();
-  };
-
+  const originalPrice = 4200;
+  const currentFinalPrice = appliedCoupon ? appliedCoupon.finalPrice : originalPrice;
 
   return (
     <>
-      {/* Modal backdrop */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -54,7 +243,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={resetModal}
+              onClick={onClose}
               className="absolute inset-0 bg-[#0A0B1A]/85 backdrop-blur-md"
             />
  
@@ -68,187 +257,293 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
             >
               {/* Close Button */}
               <button
-                onClick={resetModal}
+                onClick={onClose}
                 className="absolute top-4 right-4 p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
  
-              {/* Step 1: User Details Form */}
+              {/* Step 1: Collect Phone Details */}
               {step === "details" && (
-                <form onSubmit={handleDetailSubmit} className="flex flex-col gap-4">
-                  <div className="text-center mb-4">
+                <form onSubmit={handleDetailsSubmit} className="flex flex-col gap-4">
+                  <div className="text-center mb-2">
                     <span className="text-xs text-accent font-display uppercase font-bold tracking-wider">
-                      Step 1 of 2
+                      Checkout Step 1 of 2
                     </span>
                     <h3 className="text-xl md:text-2xl font-display font-extrabold text-white">
-                      Enter Details
+                      Billing Information
                     </h3>
-                    <p className="text-xs text-secondary-text">
-                      We&apos;ll send course login credentials to this email.
+                    <p className="text-xs text-secondary-text mt-1">
+                      Provide contact details to receive system credentials.
                     </p>
                   </div>
  
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-white/70">Full Name</label>
+                  <div className="flex flex-col gap-1.5 opacity-70">
+                    <label className="text-xs font-semibold text-white/70 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-accent" />
+                      Full Name
+                    </label>
                     <input
                       type="text"
-                      name="name"
-                      required
-                      placeholder="e.g. Rohan Sharma"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="px-4 py-3 rounded-xl glass-input text-white text-sm"
+                      disabled
+                      value={session?.user?.name || ""}
+                      className="px-4 py-3 rounded-xl glass-input text-white text-sm bg-white/5 cursor-not-allowed"
                     />
                   </div>
  
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-white/70">Email Address</label>
+                  <div className="flex flex-col gap-1.5 opacity-70">
+                    <label className="text-xs font-semibold text-white/70 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-accent" />
+                      Email Address
+                    </label>
                     <input
                       type="email"
-                      name="email"
-                      required
-                      placeholder="e.g. rohan@example.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="px-4 py-3 rounded-xl glass-input text-white text-sm"
+                      disabled
+                      value={session?.user?.email || ""}
+                      className="px-4 py-3 rounded-xl glass-input text-white text-sm bg-white/5 cursor-not-allowed"
                     />
                   </div>
  
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-white/70">Phone Number (WhatsApp)</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      placeholder="e.g. +91 9876543210"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="px-4 py-3 rounded-xl glass-input text-white text-sm"
-                    />
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-white/70 flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-accent" />
+                      Phone Number (WhatsApp) *
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none text-xs font-bold text-white/55">
+                        🇮🇳 +91
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="9876543210"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                        className="w-full pl-16 pr-4 py-3 rounded-xl glass-input text-white text-sm font-semibold tracking-wide"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Grid for City and State */}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-white/70">City *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Mumbai"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="px-4 py-3 rounded-xl glass-input text-white text-sm"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-white/70">State *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Maharashtra"
+                        value={stateName}
+                        onChange={(e) => setStateName(e.target.value)}
+                        className="px-4 py-3 rounded-xl glass-input text-white text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Grid for Pincode and GSTIN */}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-white/70">PIN Code *</label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={6}
+                        placeholder="400001"
+                        value={pincode}
+                        onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
+                        className="px-4 py-3 rounded-xl glass-input text-white text-sm font-mono tracking-wider"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-white/70">GSTIN (Optional)</label>
+                      <input
+                        type="text"
+                        maxLength={15}
+                        placeholder="Tax / GST ID"
+                        value={gstin}
+                        onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                        className="px-4 py-3 rounded-xl glass-input text-white text-sm font-mono"
+                      />
+                    </div>
                   </div>
  
                   <button
                     type="submit"
-                    className="w-full mt-4 cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.25)] hover:opacity-95 transition-all"
+                    className="w-full mt-2 cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-cta to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.25)] hover:opacity-95 transition-all"
                   >
-                    <span>Proceed to Payment</span>
+                    <span>Proceed to Checkout</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
               )}
  
-              {/* Step 2: Payment Portal Sim */}
-              {step === "payment" && (
+              {/* Step 2: Apply Coupon and Pay */}
+              {step === "checkout" && (
                 <div className="flex flex-col gap-5">
                   <div className="text-center">
                     <span className="text-xs text-accent font-display uppercase font-bold tracking-wider">
-                      Step 2 of 2
+                      Checkout Step 2 of 2
                     </span>
                     <h3 className="text-xl md:text-2xl font-display font-extrabold text-white">
-                      Simulated Payment
+                      Order Summary
                     </h3>
-                    <p className="text-xs text-secondary-text">Razorpay Test Gateway Sandbox</p>
+                    <p className="text-xs text-secondary-text mt-1">
+                      Apply coupon codes below to receive instant discounts.
+                    </p>
                   </div>
  
-                  {/* Pricing Overview */}
-                  <div className="p-4 rounded-xl bg-[#0A0B1A] border border-white/5 flex items-center justify-between text-sm">
-                    <div>
-                      <span className="text-xs text-secondary-text block">Enrollment Cost</span>
-                      <span className="font-semibold text-white">Faceless USA YouTube Masterclass</span>
+                  {/* Pricing Details */}
+                  <div className="p-4 rounded-xl bg-[#0A0B1A] border border-white/5 flex flex-col gap-2.5 text-xs text-secondary-text">
+                    <div className="flex justify-between items-center text-sm font-semibold text-white">
+                      <span>YouTube Masterclass (Lifetime Access)</span>
+                      <span>₹{originalPrice}</span>
                     </div>
-                    <span className="text-xl font-display font-extrabold text-accent">₹21</span>
-                  </div>
- 
-                  {/* Payment Methods tabs */}
-                  <div className="grid grid-cols-2 gap-2 bg-[#0A0B1A] rounded-lg p-1 border border-white/5">
-                    <button
-                      onClick={() => setPaymentMethod("upi")}
-                      className={`py-2 px-3 rounded-md text-xs font-display font-bold flex items-center justify-center gap-1.5 transition-all ${
-                        paymentMethod === "upi" ? "bg-[#15172C] text-accent" : "text-secondary-text"
-                      }`}
-                    >
-                      <Smartphone className="w-4 h-4" />
-                      <span>UPI / GPay</span>
-                    </button>
-                    <button
-                      onClick={() => setPaymentMethod("card")}
-                      className={`py-2 px-3 rounded-md text-xs font-display font-bold flex items-center justify-center gap-1.5 transition-all ${
-                        paymentMethod === "card" ? "bg-[#15172C] text-accent" : "text-secondary-text"
-                      }`}
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>Cards / NetBanking</span>
-                    </button>
-                  </div>
- 
-                  {/* Method Content */}
-                  <div className="min-h-[60px] flex flex-col justify-center text-center">
-                    {paymentMethod === "upi" ? (
-                      <p className="text-xs text-secondary-text">
-                        UPI QR and direct options will simulate app redirection. Supports Google Pay, PhonePe, Paytm, BHIM, and net banking.
-                      </p>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <input
-                          type="text"
-                          disabled
-                          placeholder="Card Details (Disabled in Simulator)"
-                          className="px-3 py-2 rounded-lg glass-input text-xs text-white/50 cursor-not-allowed text-center"
-                        />
+
+                    {appliedCoupon && (
+                      <div className="flex justify-between items-center text-emerald-400 font-semibold">
+                        <span className="flex items-center gap-1">
+                          <Ticket className="w-3.5 h-3.5" />
+                          Coupon Applied ({appliedCoupon.code})
+                        </span>
+                        <span>-₹{appliedCoupon.discount}</span>
                       </div>
                     )}
+
+                    <div className="h-px bg-white/5 my-1" />
+
+                    <div className="flex justify-between items-center text-base font-display font-black text-white">
+                      <span>Total Amount:</span>
+                      <span className="text-accent">₹{currentFinalPrice}</span>
+                    </div>
+                  </div>
+
+                  {/* Coupon Application Panel */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-white/70">Promo / Coupon Code</label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          placeholder="e.g. SUN1000"
+                          disabled={!!appliedCoupon || isCouponLoading}
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          className="w-full px-3 py-2.5 rounded-xl glass-input text-xs font-bold uppercase tracking-wider"
+                        />
+                      </div>
+                      
+                      {appliedCoupon ? (
+                        <button
+                          onClick={handleRemoveCoupon}
+                          className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/25 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleApplyCoupon}
+                          disabled={isCouponLoading || !couponCode.trim()}
+                          className="px-5 py-2.5 bg-secondary-bg hover:bg-white/5 text-white disabled:opacity-50 border border-white/10 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          {isCouponLoading ? (
+                            <span className="h-3 w-3 rounded-full border border-white border-t-transparent animate-spin" />
+                          ) : (
+                            <span>Apply</span>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
  
-                  <button
-                    onClick={handleProcessPayment}
-                    disabled={isProcessing}
-                    className="w-full cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-success to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.25)]"
-                  >
-                    {isProcessing ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                        Processing Securely...
-                      </span>
-                    ) : (
-                      <span>Simulate Success Payment</span>
-                    )}
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-2.5 mt-2">
+                    <button
+                      onClick={handleProcessPayment}
+                      disabled={isProcessing}
+                      className="w-full cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-success to-accent text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.25)] disabled:opacity-50"
+                    >
+                      {isProcessing ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                          Initializing Secure Checkout...
+                        </span>
+                      ) : (
+                        <>
+                          <span>Pay Securely ₹{currentFinalPrice}</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setStep("details")}
+                      disabled={isProcessing}
+                      className="w-full text-center text-xs text-secondary-text hover:text-white transition-colors cursor-pointer py-1.5 disabled:opacity-50"
+                    >
+                      ← Back to Billing Details
+                    </button>
+                  </div>
                 </div>
               )}
  
               {/* Step 3: Success Confirmation */}
               {step === "success" && (
-                <div className="flex flex-col items-center text-center gap-4 py-4">
+                <div className="flex flex-col items-center text-center gap-4 py-4 animate-in zoom-in-95 duration-200">
                   <div className="w-16 h-16 rounded-full bg-success/20 border border-success/30 flex items-center justify-center text-success mb-2 animate-bounce">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
  
                   <span className="text-xs text-success font-display uppercase font-extrabold tracking-widest">
-                    Payment Success
+                    Payment Verified
                   </span>
                   
                   <h3 className="text-2xl font-display font-black text-white">
-                    Welcome to the Masterclass, {formData.name.split(" ")[0]}!
+                    Welcome to the Course!
                   </h3>
+                  <p className="text-xs text-secondary-text -mt-2">
+                    Lifetime access has been activated for your account.
+                  </p>
  
-                  <div className="p-4 rounded-xl bg-[#0A0B1A] border border-white/5 text-xs text-secondary-text text-left flex flex-col gap-2 w-full">
+                  <div className="p-4 rounded-xl bg-[#0A0B1A] border border-white/5 text-xs text-secondary-text text-left flex flex-col gap-2.5 w-full">
                     <p>
-                      <strong>Email:</strong> {formData.email}
+                      <strong>Account Email:</strong> {session?.user?.email}
                     </p>
-                    <p>
-                      <strong>Phone:</strong> {formData.phone}
-                    </p>
+                    {transactionDetails && (
+                      <>
+                        <p>
+                          <strong>Order Reference:</strong> {transactionDetails.orderId}
+                        </p>
+                        <p>
+                          <strong>Payment Reference:</strong> {transactionDetails.paymentId}
+                        </p>
+                      </>
+                    )}
                     <p className="border-t border-white/5 pt-2 mt-1">
-                      ✓ An activation link and Discord community invite has been dispatched. Please check your inbox (including promotions/spam).
+                      ✓ A PDF invoice has been sent to your email. Please check your inbox (including promotions/spam folders).
                     </p>
                   </div>
  
                   <button
-                    onClick={resetModal}
-                    className="w-full mt-4 cursor-pointer px-6 py-3 bg-[#0A0B1A] hover:bg-[#0A0B1A]/85 border border-white/10 hover:border-white/20 text-white font-display font-semibold rounded-xl transition-all"
+                    onClick={() => {
+                      onClose();
+                      window.location.href = "/course/youtube-masterclass";
+                    }}
+                    className="w-full mt-4 cursor-pointer py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-display font-bold rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.2)]"
                   >
-                    Close & Return to Page
+                    Start Learning
                   </button>
                 </div>
               )}
@@ -258,37 +553,6 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
           </div>
         )}
       </AnimatePresence>
- 
-      {/* Static Payment & Trust Section */}
-      <section className="w-full py-12 bg-primary-bg border-t border-white/5 relative z-10">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-xs text-secondary-text font-semibold uppercase tracking-wider mb-6">
-            Supported Checkout Platforms & Gateways
-          </p>
-          
-          {/* Logo row (simulated images / SVG text represent tags) */}
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 opacity-60 hover:opacity-85 transition-opacity duration-300 mb-8">
-            <span className="text-sm font-display font-black tracking-widest text-white">UPI</span>
-            <span className="text-sm font-display font-black tracking-widest text-white">GPAY</span>
-            <span className="text-sm font-display font-black tracking-widest text-white">PHONEPE</span>
-            <span className="text-sm font-display font-black tracking-widest text-white">PAYTM</span>
-            <span className="text-sm font-display font-black tracking-widest text-white">VISA</span>
-            <span className="text-sm font-display font-black tracking-widest text-white">MASTERCARD</span>
-            <span className="text-sm font-display font-black tracking-widest text-white">RUPAY</span>
-          </div>
- 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-xs text-secondary-text border-t border-white/5 pt-6">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-success" />
-              <span>SSL Secured & Verified 256-bit Connections</span>
-            </div>
-            <div className="hidden sm:block h-4 w-px bg-white/10" />
-            <div>
-              <span>Official Razorpay Partner Marketplace Integration</span>
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

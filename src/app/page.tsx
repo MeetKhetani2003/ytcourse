@@ -2,25 +2,18 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+
+import { useSession, signIn } from "next-auth/react";
 import { Calendar, Clock, Mail, Phone, Flame } from "lucide-react";
+
+import Navbar from "@/components/Navbar";
 import Payment from "@/components/Payment";
 import ConversionFeatures from "@/components/ConversionFeatures";
 
 export default function Home() {
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const { data: session, status } = useSession();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name && formData.email && formData.phone) {
-      setIsCheckoutOpen(true);
-    }
-  };
 
   const learnings = [
     "How to build a faceless YouTube channel (no camera, no face, no voice)",
@@ -33,8 +26,23 @@ export default function Home() {
     "Live demo: channel setup + video creation",
     "Live Q&A to clear all your doubts",
   ];
+
+  const hasPurchased = session?.user?.purchasedCourses?.includes("youtube-course");
+
+  const handleCtaClick = () => {
+    if (!session) {
+      signIn("google");
+    } else if (hasPurchased) {
+      window.location.href = "/course/youtube-masterclass";
+    } else {
+      setIsCheckoutOpen(true);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-primary-bg flex flex-col items-center justify-center py-6 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-radial-glow font-sans gap-8">
+    <div className="min-h-screen bg-primary-bg flex flex-col items-center py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-radial-glow font-sans gap-8">
+      {/* Navbar Integration */}
+      <Navbar onOpenCheckout={() => setIsCheckoutOpen(true)} />
       
       {/* Background glow spots and rings */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full glow-emerald-spot pointer-events-none opacity-50" />
@@ -44,12 +52,12 @@ export default function Home() {
         <div className="w-[600px] h-[600px] border border-dashed border-white/10 rounded-full animate-[spin_180s_linear_infinite]" />
       </div>
 
-      <div className="max-w-5xl w-full relative z-10 glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+      <div className="max-w-5xl w-full relative z-10 glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl mt-8">
         
         {/* Main card two-column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12">
           
-          {/* Left Column: Form and Creator profile */}
+          {/* Left Column: Checkout Card and Creator profile */}
           <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between">
             <div>
               {/* Mobile Banner Image - Visible First on Mobile */}
@@ -66,7 +74,7 @@ export default function Home() {
 
               {/* Special Launch Badge */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 border border-accent/20 text-accent font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-5">
-                <Flame className="w-3.5 h-3.5" /> 2026 Live Masterclass Registration
+                <Flame className="w-3.5 h-3.5" /> 2026 Updated Video Masterclass
               </div>
 
               {/* Title */}
@@ -77,16 +85,16 @@ export default function Home() {
 
               {/* Price Tag with Strikethrough */}
               <div className="flex items-center gap-3 mb-6 bg-white/5 border border-white/5 p-3 rounded-xl w-fit">
-                <span className="text-xs text-secondary-text font-semibold uppercase">Registration Fee:</span>
-                <span className="text-sm text-white/40 line-through">₹1,999</span>
-                <span className="text-base font-display font-black text-accent">₹21 Only</span>
+                <span className="text-xs text-secondary-text font-semibold uppercase">Enrollment Fee:</span>
+                <span className="text-sm text-white/40 line-through">₹9,999</span>
+                <span className="text-base font-display font-black text-accent">₹4,200</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-500 border border-red-500/30 uppercase">
-                  98% Off
+                  Special Launch Offer
                 </span>
               </div>
 
               {/* Creator Profile Card */}
-              <div className="p-4 rounded-2xl bg-secondary-bg/60 border border-white/5 flex gap-4 mb-8 items-start hover:border-accent/20 transition-colors duration-300">
+              <div className="p-4 rounded-2xl bg-secondary-bg/60 border border-white/5 flex gap-4 mb-6 items-start hover:border-accent/20 transition-colors duration-300">
                 <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-accent shrink-0">
                   <Image
                     src="/instructor.png"
@@ -107,77 +115,81 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Registration Form */}
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="name" className="text-xs font-semibold text-white/70">
-                    Your Name <span className="text-accent">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    placeholder="e.g. Ankit Kumar"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="email" className="text-xs font-semibold text-white/70">
-                    Email Address <span className="text-accent">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    placeholder="e.g. ankit@example.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="phone" className="text-xs font-semibold text-white/70">
-                    WhatsApp Number <span className="text-accent">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none text-xs font-bold text-white/55">
-                      🇮🇳 +91
-                    </div>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      required
-                      maxLength={10}
-                      placeholder="9876543210"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full pl-16 pr-4 py-3 rounded-xl glass-input text-white text-sm"
-                    />
+              {/* Dynamic Checkout Interaction Panel */}
+              <div className="p-5 rounded-2xl bg-[#0A0B1A]/80 border border-white/5 shadow-inner mb-6">
+                {status === "loading" ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-2">
+                    <span className="h-6 w-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                    <span className="text-xs text-secondary-text">Checking registration status...</span>
                   </div>
-                  <p className="text-[10px] text-secondary-text mt-1.5 flex items-center gap-1">
-                    <span>✓ Workshop credentials & updates will be dispatched to your</span>
-                    <span className="font-semibold text-emerald-400">WhatsApp</span>
-                  </p>
-                </div>
+                ) : !session ? (
+                  /* Case 1: Unauthenticated */
+                  <div className="flex flex-col gap-4 text-center">
+                    <p className="text-xs text-secondary-text leading-relaxed">
+                      Enroll in the course instantly. Single-click Google login is required to process billing and deliver access credentials.
+                    </p>
+                    <button
+                      onClick={() => signIn("google")}
+                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 bg-white text-black font-display font-black text-sm rounded-xl hover:bg-white/95 transition-all shadow-[0_10px_20px_rgba(255,255,255,0.05)] cursor-pointer"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69a5.74 5.74 0 0 1-2.5 3.77v3.13h4.05c2.37-2.18 3.5-5.4 3.5-9.75Z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-4.05-3.13c-1.12.75-2.55 1.2-3.91 1.2-3.01 0-5.56-2.03-6.47-4.77H1.36v3.23C3.33 21.6 7.42 24 12 24Z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.53 14.39a7.18 7.18 0 0 1 0-4.78V6.38H1.36a11.98 11.98 0 0 0 0 11.24l4.17-3.23Z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 7.42 0 3.33 2.4 1.36 6.38l4.17 3.23c.91-2.74 3.46-4.86 6.47-4.86Z"
+                        />
+                      </svg>
+                      <span>Continue with Google</span>
+                    </button>
+                  </div>
+                ) : hasPurchased ? (
+                  /* Case 2: Enrolled */
+                  <div className="flex flex-col gap-4 text-center">
+                    <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                      Enrolled & Active
+                    </div>
+                    <p className="text-xs text-secondary-text leading-relaxed">
+                      Welcome back, <strong>{session.user.name?.split(" ")[0]}</strong>! You own this course. Visit the player to stream protected videos.
+                    </p>
+                    <Link
+                      href="/course/youtube-masterclass"
+                      className="w-full flex justify-center items-center py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-teal-600 hover:to-emerald-500 text-white font-display font-black text-sm rounded-xl transition-all shadow-[0_10px_20px_rgba(16,185,129,0.2)]"
+                    >
+                      Go To Course
+                    </Link>
+                  </div>
+                ) : (
+                  /* Case 3: Logged In, Not Enrolled */
+                  <div className="flex flex-col gap-4 text-center">
+                    <p className="text-xs text-secondary-text leading-relaxed">
+                      Logged in as <strong>{session.user.email}</strong>. Ready to secure your masterclass access.
+                    </p>
+                    <button
+                      onClick={handleCtaClick}
+                      className="w-full flex justify-center items-center py-3.5 px-6 bg-gradient-to-r from-cta to-accent hover:from-accent hover:to-cta text-white font-display font-black text-sm rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.25)] hover:shadow-[0_15px_25px_rgba(255,106,0,0.35)] transition-all cursor-pointer"
+                    >
+                      Buy Course (Apply Coupon)
+                    </button>
+                  </div>
+                )}
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full mt-6 cursor-pointer flex justify-center items-center py-4.5 px-6 bg-gradient-to-r from-cta to-accent hover:from-accent hover:to-cta text-white font-display font-black text-lg rounded-xl shadow-[0_10px_20px_rgba(255,106,0,0.25)] hover:shadow-[0_15px_25px_rgba(255,106,0,0.35)] transition-all duration-300 transform hover:-translate-y-0.5"
-                >
-                  Register Now at ₹21
-                </button>
-              </form>
             </div>
 
             {/* Gateway disclaimer logos */}
-            <div className="border-t border-white/5 pt-6 mt-8 text-center flex flex-col gap-2">
+            <div className="border-t border-white/5 pt-6 mt-6 text-center flex flex-col gap-2">
               <span className="text-[10px] text-white/45 uppercase tracking-wider block font-semibold">
                 🔒 Secure SSL Encrypted Checkout via Razorpay
               </span>
@@ -193,7 +205,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Column: Webinar Details & Learnings */}
+          {/* Right Column: Masterclass Details & Learnings */}
           <div className="lg:col-span-6 bg-secondary-bg/40 p-6 sm:p-10 border-l border-white/5 flex flex-col justify-between">
             <div>
               {/* Webinar Image */}
@@ -210,16 +222,16 @@ export default function Home() {
               {/* Masterclass details */}
               <div className="mb-8">
                 <h3 className="text-xs font-display font-extrabold text-accent uppercase tracking-wider mb-3 block">
-                  Masterclass Timings:
+                  Masterclass Deliverables:
                 </h3>
                 <div className="flex flex-col gap-2.5">
                   <div className="flex items-center gap-2.5 text-white/95 text-sm font-semibold">
                     <Calendar className="w-4.5 h-4.5 text-accent shrink-0" />
-                    <span>14th June (Sunday)</span>
+                    <span>Self-Paced Streaming Video Portal</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-white/95 text-sm font-semibold">
                     <Clock className="w-4.5 h-4.5 text-accent shrink-0" />
-                    <span>11:00 AM (IST)</span>
+                    <span>Lifetime Access (Free Updates)</span>
                   </div>
                 </div>
               </div>
@@ -276,11 +288,11 @@ export default function Home() {
 
       </div>
 
-      {/* Simulated Razorpay Checkout popup modal */}
+      {/* Razorpay Checkout modal popup */}
       <Payment isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} />
 
-      {/* Floating purchase notifier, active users counter, WhatsApp bubble */}
-      <ConversionFeatures onOpenCheckout={() => setIsCheckoutOpen(true)} />
+      {/* Floating purchase notifier, active users counter */}
+      <ConversionFeatures onOpenCheckout={handleCtaClick} />
 
     </div>
   );
