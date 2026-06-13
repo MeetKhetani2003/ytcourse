@@ -78,7 +78,7 @@ export default function AddToCart() {
                 <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-accent shrink-0">
                   <Image
                     src="/instructor.png"
-                    alt="YT Gyan Abhishek"
+                    alt="Amit Maurya"
                     fill
                     sizes="56px"
                     className="object-cover object-top"
@@ -86,7 +86,7 @@ export default function AddToCart() {
                 </div>
                 <div>
                   <h2 className="font-display font-bold text-white text-sm md:text-base flex items-center gap-1">
-                    YT Gyan Abhishek
+                    Amit Maurya
                   </h2>
                   <p className="text-xs text-secondary-text leading-relaxed mt-0.5">
                     My Internet Pays My Bills | 180k+ YouTube Family | Helping Beginners Build Income Using Faceless Channels
@@ -235,11 +235,26 @@ export default function AddToCart() {
                 <div className="flex flex-col sm:flex-row gap-4 text-xs text-secondary-text">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-accent" />
-                    <span>contactytgyans@gmail.com</span>
+                    <span>zenvibe.011@gmail.com</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-accent" />
-                    <span>+91 8700245625</span>
+                    <span>+91 9305577957</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 stroke-current text-accent shrink-0 fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <a
+                      href="https://instagram.com/growwithamit8"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-accent transition-colors"
+                    >
+                      @growwithamit8
+                    </a>
                   </div>
                 </div>
               </div>

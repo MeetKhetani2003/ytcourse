@@ -78,7 +78,7 @@ export default function ConversionFeatures({ onOpenCheckout }: ConversionProps) 
     <>
       {/* 1. Floating WhatsApp Button */}
       <a
-        href="https://wa.me/919876543210?text=Hi,%20I%20have%20a%20question%20about%20the%20Faceless%20YouTube%20Masterclass"
+        href="https://wa.me/919305577957?text=Hi,%20I%20have%20a%20question%20about%20the%20Faceless%20YouTube%20Masterclass"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-24 md:bottom-8 right-6 z-40 p-4 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_10px_20px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer group"

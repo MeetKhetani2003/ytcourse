@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
         await connectDB();
         const existingUser = await User.findOne({ email: user.email });
         if (!existingUser) {
-          const adminEmail = process.env.ADMIN_EMAIL || "meetkhetani1111@gmail.com";
+          const adminEmail = process.env.ADMIN_EMAIL || "zenvibe.011@gmail.com";
           const role = user.email === adminEmail ? "admin" : "user";
           await User.create({
             name: user.name,

@@ -67,7 +67,7 @@ export default function Instructor() {
               Founder Profile & Lead Strategist
             </span>
             <h3 className="text-2xl md:text-3xl font-display font-black text-white mb-6">
-              Hi, I&apos;m Meet, Founder of Faceless Mastery.
+              Hi, I&apos;m Amit Maurya, Founder of Faceless Mastery.
             </h3>
 
             {/* Story paragraphs */}
