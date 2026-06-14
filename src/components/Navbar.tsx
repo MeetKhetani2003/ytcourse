@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
-import { Menu, X, ArrowRight, User as UserIcon, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { Menu, X, ArrowRight, User as UserIcon, LogOut, LayoutDashboard, ShieldCheck, Mail, Phone } from "lucide-react";
 
 interface NavbarProps {
   onOpenCheckout?: () => void;
@@ -36,13 +36,7 @@ export default function Navbar({ onOpenCheckout }: NavbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const navLinks = [
-    { label: "Core Skills", href: "/#what-you-will-learn" },
-    { label: "Curriculum", href: "/#curriculum-section" },
-    { label: "Results", href: "/#results-section" },
-    { label: "Reviews", href: "/#testimonials-section" },
-    { label: "FAQ", href: "/#faq-section" }
-  ];
+
 
   const hasPurchased = session?.user?.purchasedCourses?.includes("youtube-course");
   const isAdmin = session?.user?.role === "admin";
@@ -63,11 +57,45 @@ export default function Navbar({ onOpenCheckout }: NavbarProps) {
     <nav
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-[#0A0B1A]/90 backdrop-blur-md border-b border-white/5 py-3 shadow-lg"
-          : "bg-transparent py-5"
+          ? "bg-[#0A0B1A]/90 backdrop-blur-md border-b border-white/5 shadow-lg"
+          : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
+      {/* Top Info Bar */}
+      <div className={`w-full bg-[#070814]/90 border-b border-white/5 text-white/65 text-[10px] md:text-xs transition-all duration-300 overflow-hidden ${
+        scrolled ? "max-h-0 opacity-0 py-0 border-b-0" : "max-h-12 py-2 opacity-100"
+      }`}>
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 px-4 md:px-8 font-sans">
+          {/* Left Side: Email & Phone */}
+          <div className="flex items-center gap-4 flex-wrap justify-center">
+            <a href="mailto:zenvibe.011@gmail.com" className="flex items-center gap-1.5 hover:text-white transition-colors duration-300">
+              <Mail className="w-3.5 h-3.5 text-accent" />
+              <span>zenvibe.011@gmail.com</span>
+            </a>
+            <span className="hidden sm:inline text-white/10">|</span>
+            <a href="tel:+919305577957" className="flex items-center gap-1.5 hover:text-white transition-colors duration-300">
+              <Phone className="w-3.5 h-3.5 text-accent" />
+              <span>+91 9305577957</span>
+            </a>
+          </div>
+          {/* Right Side: Instagram */}
+          <div className="flex items-center gap-1.5">
+            <a href="https://instagram.com/growwithamit8" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-white transition-colors duration-300">
+              <svg className="w-3.5 h-3.5 text-accent shrink-0 fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+              <span>@growwithamit8</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navbar */}
+      <div className={`max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between transition-all duration-300 ${
+        scrolled ? "py-2.5" : "py-4"
+      }`}>
         
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 text-white font-display font-extrabold text-base md:text-lg">
@@ -83,18 +111,7 @@ export default function Navbar({ onOpenCheckout }: NavbarProps) {
           <span className="sm:hidden">Faceless USA</span>
         </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-8 text-sm font-display font-semibold text-secondary-text">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="hover:text-white transition-colors duration-300"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
+
 
         {/* Desktop CTA & Session Buttons */}
         <div className="hidden md:flex items-center gap-4">
@@ -218,21 +235,8 @@ export default function Navbar({ onOpenCheckout }: NavbarProps) {
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[60px] bg-secondary-bg border-b border-white/10 p-5 flex flex-col gap-4 shadow-2xl z-40 text-sm">
-          <div className="flex flex-col gap-3 font-display font-semibold text-secondary-text">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="hover:text-white transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+        <div className="md:hidden absolute inset-x-0 top-full bg-secondary-bg border-b border-white/10 p-5 flex flex-col gap-4 shadow-2xl z-40 text-sm">
 
-          <div className="h-px bg-white/5 my-1" />
 
           {session && (
             <div className="flex flex-col gap-2">

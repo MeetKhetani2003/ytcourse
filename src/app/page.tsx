@@ -87,7 +87,7 @@ export default function Home() {
               <div className="flex items-center gap-3 mb-6 bg-white/5 border border-white/5 p-3 rounded-xl w-fit">
                 <span className="text-xs text-secondary-text font-semibold uppercase">Enrollment Fee:</span>
                 <span className="text-sm text-white/40 line-through">₹9,999</span>
-                <span className="text-base font-display font-black text-accent">₹4,200</span>
+                <span className="text-base font-display font-black text-accent">₹3,200</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-500 border border-red-500/30 uppercase">
                   Special Launch Offer
                 </span>

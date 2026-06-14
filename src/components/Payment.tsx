@@ -229,7 +229,7 @@ export default function Payment({ isOpen, onClose }: PaymentProps) {
     }
   };
 
-  const originalPrice = 4200;
+  const originalPrice = 3200;
   const currentFinalPrice = appliedCoupon ? appliedCoupon.finalPrice : originalPrice;
 
   return (

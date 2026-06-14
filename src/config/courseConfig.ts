@@ -24,7 +24,7 @@ export const course: Course = {
   id: "youtube-course",
   title: "YouTube Masterclass",
   slug: "youtube-masterclass",
-  price: 4200,
+  price: 3200,
   modules: [
     {
       id: "module-1",
