@@ -97,7 +97,7 @@ export default function Home() {
               <div className="p-4 rounded-2xl bg-secondary-bg/60 border border-white/5 flex gap-4 mb-6 items-start hover:border-accent/20 transition-colors duration-300">
                 <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-accent shrink-0">
                   <Image
-                    src="/instructor.png"
+                    src="/creator.jpeg"
                     alt="Amit Maurya"
                     fill
                     sizes="56px"
@@ -262,10 +262,10 @@ export default function Home() {
                     <Mail className="w-4 h-4 text-accent shrink-0" />
                     <span>zenvibe.011@gmail.com</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-accent shrink-0" />
                     <span>+91 9305577957</span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-2">
                     <svg className="w-4 h-4 stroke-current text-accent shrink-0 fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>

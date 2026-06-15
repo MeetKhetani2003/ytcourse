@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Users, Gift } from "lucide-react";
+import { X, Users, Gift } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 const students = [
   "Rohan S. from Delhi just enrolled!",
@@ -83,7 +84,7 @@ export default function ConversionFeatures({ onOpenCheckout }: ConversionProps) 
         rel="noopener noreferrer"
         className="fixed bottom-24 md:bottom-8 right-6 z-40 p-4 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_10px_20px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer group"
       >
-        <MessageCircle className="w-6 h-6 fill-white stroke-none" />
+        <FaWhatsapp className="w-6 h-6" />
         <span className="max-w-0 overflow-hidden group-hover:max-w-[150px] group-hover:ml-2 font-display text-sm font-bold transition-all duration-300 whitespace-nowrap">
           Chat With Support
         </span>

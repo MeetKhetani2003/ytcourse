@@ -37,7 +37,7 @@ export default function Instructor() {
             {/* Main Image Container */}
             <div className="relative w-80 h-[420px] md:w-96 md:h-[480px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl z-10">
               <Image
-                src="/instructor.png"
+                src="/creator.jpeg"
                 alt="Lead Instructor Portrait"
                 fill
                 sizes="(max-width: 768px) 320px, 384px"

@@ -155,7 +155,7 @@ export default function Hero() {
             className="relative w-80 h-[450px] md:w-96 md:h-[500px] rounded-3xl overflow-hidden border border-white/10 z-10"
           >
             <Image
-              src="/instructor.png"
+              src="/creator.jpeg"
               alt="Course Instructor"
               fill
               priority
