@@ -74,13 +74,16 @@ export async function GET(
         },
       });
 
+      const ext = path.extname(videoFilePath).toLowerCase();
+      const contentType = ext === ".webm" ? "video/webm" : "video/mp4";
+
       return new NextResponse(stream, {
         status: 206,
         headers: {
           "Content-Range": `bytes ${start}-${end}/${fileSize}`,
           "Accept-Ranges": "bytes",
           "Content-Length": chunksize.toString(),
-          "Content-Type": "video/mp4",
+          "Content-Type": contentType,
         },
       });
     } else {
@@ -93,11 +96,14 @@ export async function GET(
         },
       });
 
+      const ext = path.extname(videoFilePath).toLowerCase();
+      const contentType = ext === ".webm" ? "video/webm" : "video/mp4";
+
       return new NextResponse(stream, {
         status: 200,
         headers: {
           "Content-Length": fileSize.toString(),
-          "Content-Type": "video/mp4",
+          "Content-Type": contentType,
         },
       });
     }

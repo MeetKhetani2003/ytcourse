@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Play, Lock, CheckCircle2, ChevronDown, ChevronUp, FileVideo, Shield, Info } from "lucide-react";
+import { Play, Pause, Lock, CheckCircle2, ChevronDown, ChevronUp, FileVideo, Shield, Info, Volume2, VolumeX, Maximize } from "lucide-react";
 import { Course, Video } from "@/config/courseConfig";
 
 interface CoursePlayerProps {
@@ -27,30 +27,100 @@ export default function CoursePlayer({ courseData }: CoursePlayerProps) {
     }));
   };
 
-  useEffect(() => {
-    // CRITICAL SECURITY NOTE:
-    // Browser-level video protections (such as disabling contextmenu, controlsList="nodownload", 
-    // and disablePictureInPicture) provide a deterrent against casual users trying to steal content.
-    // However, they can NEVER be 100% secure. Tech-savvy users can always screen-record, 
-    // capture video packets from the network tab, or bypass DOM constraints via console injections.
-    // The true line of defense is our secure token/session-verified API streaming endpoint (/api/video/[videoId]),
-    // which prevents direct public URLs from being leaked.
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTimeStr, setCurrentTimeStr] = useState("0:00");
+  const [durationStr, setDurationStr] = useState("0:00");
+  const [isMuted, setIsMuted] = useState(false);
 
+  useEffect(() => {
+    // Reset state on video change
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentTimeStr("0:00");
+  }, [activeVideo]);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullScreen = () => {
+    const container = videoRef.current?.parentElement;
+    if (!container) return;
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch(err => console.error(err));
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const current = videoRef.current.currentTime;
+      const dur = videoRef.current.duration;
+      if (dur > 0) {
+        setProgress((current / dur) * 100);
+      }
+      setCurrentTimeStr(formatTime(current));
+      setDurationStr(formatTime(dur));
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (videoRef.current) {
+      const seekTime = (parseFloat(e.target.value) / 100) * videoRef.current.duration;
+      videoRef.current.currentTime = seekTime;
+      setProgress(parseFloat(e.target.value));
+    }
+  };
+
+  useEffect(() => {
+    // SECURITY: Prevent Context Menu and DevTools Shortcuts
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
     };
 
-    const videoElement = videoRef.current;
-    if (videoElement) {
-      videoElement.addEventListener("contextmenu", handleContextMenu);
-    }
-
-    return () => {
-      if (videoElement) {
-        videoElement.removeEventListener("contextmenu", handleContextMenu);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') ||
+        (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'j') ||
+        (e.ctrlKey && e.key.toLowerCase() === 'u')
+      ) {
+        e.preventDefault();
       }
     };
-  }, [activeVideo]); // Re-attach when active video shifts
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 w-full gap-6 min-h-[calc(100vh-180px)] items-stretch">
@@ -59,22 +129,63 @@ export default function CoursePlayer({ courseData }: CoursePlayerProps) {
       <div className="lg:col-span-8 flex flex-col gap-6">
         
         {/* HTML5 Secured Player Container */}
-        <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-[#000] shadow-2xl group">
+        <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-[#000] shadow-2xl group flex flex-col justify-center">
           <video
             ref={videoRef}
             key={activeVideo.id}
             src={`/api/video/${activeVideo.id}`}
-            controls
-            controlsList="nodownload"
             disablePictureInPicture
             playsInline
-            className="w-full h-full object-contain"
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={() => setIsPlaying(false)}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            className="w-full h-full object-contain pointer-events-none"
             autoPlay
           />
           
           {/* Subtle streaming overlay watermark */}
           <div className="absolute top-4 right-4 pointer-events-none select-none text-[10px] text-white/20 font-mono tracking-widest bg-black/40 px-2.5 py-1 rounded">
             SECURE STREAM
+          </div>
+
+          {/* Custom Controls Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col gap-2">
+            
+            {/* Progress Bar */}
+            <div className="w-full flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={progress}
+                onChange={handleSeek}
+                className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full"
+              />
+            </div>
+
+            {/* Controls Row */}
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center gap-4">
+                <button onClick={togglePlay} className="hover:text-accent transition-colors">
+                  {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                </button>
+                <div className="flex items-center gap-2 text-xs font-mono text-white/80 select-none">
+                  <span>{currentTimeStr}</span>
+                  <span>/</span>
+                  <span>{durationStr}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button onClick={toggleMute} className="hover:text-accent transition-colors">
+                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+                <button onClick={toggleFullScreen} className="hover:text-accent transition-colors">
+                  <Maximize className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
