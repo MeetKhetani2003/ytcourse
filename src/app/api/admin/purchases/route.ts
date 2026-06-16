@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { verifyAdminToken } from "@/lib/adminAuth";
 import connectDB from "@/lib/db";
 import { Purchase } from "@/models/Purchase";
 import "@/models/User"; // Ensure User schema is loaded for Mongoose populate to resolve
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || session.user.role !== "admin") {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_token")?.value;
+    const secret = process.env.ADMIN_SESSION_SECRET || "some-fallback-secret-for-admin-session";
+    const isAuthenticated = await verifyAdminToken(token, secret);
+    
+    if (!isAuthenticated) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 

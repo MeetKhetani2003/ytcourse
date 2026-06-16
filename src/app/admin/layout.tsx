@@ -1,17 +1,8 @@
 import React from "react";
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import Link from "next/link";
-import { LayoutDashboard, Users, Ticket, CreditCard, Play, Home, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Users, Ticket, CreditCard, Play, Home, ShieldCheck, LogOut } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user || session.user.role !== "admin") {
-    redirect("/denied");
-  }
-
   const sidebarLinks = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Users Management", href: "/admin/users", icon: Users },
@@ -77,6 +68,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Home className="w-4 h-4 text-accent shrink-0" />
             <span>Main Landing Site</span>
           </Link>
+          <a
+            href="/api/admin/logout"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-xs text-red-400 hover:text-red-350 transition-all font-semibold"
+          >
+            <LogOut className="w-4 h-4 shrink-0 text-red-400" />
+            <span>Logout</span>
+          </a>
         </div>
       </aside>
 
