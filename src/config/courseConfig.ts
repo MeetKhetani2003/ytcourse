@@ -46,5 +46,18 @@ export const course: Course = {
         },
       ],
     },
+    {
+      id: "module-2",
+      title: "Module 2",
+      videos: [
+        {
+          id: "video-3",
+          title: "1. Module 2",
+          duration: "TBD",
+          description: "Diving into the second module.",
+          videoUrl: "module2.mp4",
+        },
+      ],
+    },
   ],
 };
