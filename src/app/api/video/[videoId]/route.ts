@@ -65,14 +65,7 @@ export async function GET(
 
       const chunksize = end - start + 1;
       const fileStream = fs.createReadStream(videoFilePath, { start, end });
-
-      const stream = new ReadableStream({
-        start(controller) {
-          fileStream.on("data", (chunk) => controller.enqueue(chunk));
-          fileStream.on("end", () => controller.close());
-          fileStream.on("error", (err) => controller.error(err));
-        },
-      });
+      const stream = require('stream').Readable.toWeb(fileStream) as ReadableStream;
 
       const ext = path.extname(videoFilePath).toLowerCase();
       const contentType = ext === ".webm" ? "video/webm" : "video/mp4";
@@ -88,13 +81,7 @@ export async function GET(
       });
     } else {
       const fileStream = fs.createReadStream(videoFilePath);
-      const stream = new ReadableStream({
-        start(controller) {
-          fileStream.on("data", (chunk) => controller.enqueue(chunk));
-          fileStream.on("end", () => controller.close());
-          fileStream.on("error", (err) => controller.error(err));
-        },
-      });
+      const stream = require('stream').Readable.toWeb(fileStream) as ReadableStream;
 
       const ext = path.extname(videoFilePath).toLowerCase();
       const contentType = ext === ".webm" ? "video/webm" : "video/mp4";
