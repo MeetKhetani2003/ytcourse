@@ -49,9 +49,9 @@ async function transcodeVideo(videoId: string, inputFilename: string) {
 
 async function main() {
   console.log('Transcoding videos to HLS...');
-  // Transcode module 2
-  await transcodeVideo('video-3', 'module2.mp4');
-  // You can add more videos here, or dynamically scan.
+  // Transcode intro and module 1
+  await transcodeVideo('video-1', 'intro.webm');
+  await transcodeVideo('video-2', 'module1.webm');
   console.log('Transcoding complete.');
 }
 
