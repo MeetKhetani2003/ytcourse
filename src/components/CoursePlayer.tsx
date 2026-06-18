@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Play, Pause, Lock, CheckCircle2, ChevronDown, ChevronUp, FileVideo, Shield, Info, Volume2, VolumeX, Maximize } from "lucide-react";
 import { Course, Video } from "@/config/courseConfig";
+import Hls from "hls.js";
 
 interface CoursePlayerProps {
   courseData: Course;
@@ -34,10 +35,40 @@ export default function CoursePlayer({ courseData }: CoursePlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
+    let hls: Hls | null = null;
+    const videoElement = videoRef.current;
+    
+    if (videoElement) {
+      const src = `/api/video/${activeVideo.id}/master.m3u8`;
+
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(src);
+        hls.attachMedia(videoElement);
+        
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          videoElement.play().catch(e => console.log("Auto-play prevented", e));
+          setIsPlaying(true);
+        });
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        videoElement.src = src;
+        videoElement.addEventListener('loadedmetadata', () => {
+          videoElement.play().catch(e => console.log("Auto-play prevented", e));
+          setIsPlaying(true);
+        });
+      }
+    }
+
     // Reset state on video change
     setIsPlaying(false);
     setProgress(0);
     setCurrentTimeStr("0:00");
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
   }, [activeVideo]);
 
   const togglePlay = () => {
@@ -133,7 +164,6 @@ export default function CoursePlayer({ courseData }: CoursePlayerProps) {
           <video
             ref={videoRef}
             key={activeVideo.id}
-            src={`/api/video/${activeVideo.id}`}
             disablePictureInPicture
             playsInline
             onTimeUpdate={handleTimeUpdate}
