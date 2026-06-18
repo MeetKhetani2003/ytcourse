@@ -42,7 +42,9 @@ export default function CoursePlayer({ courseData }: CoursePlayerProps) {
       const src = `/api/video/${activeVideo.id}/master.m3u8`;
 
       if (Hls.isSupported()) {
-        hls = new Hls();
+        hls = new Hls({
+          startPosition: 0,
+        });
         hls.loadSource(src);
         hls.attachMedia(videoElement);
         
