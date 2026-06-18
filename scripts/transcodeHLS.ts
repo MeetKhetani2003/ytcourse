@@ -7,9 +7,10 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const STORAGE_DIR = path.join(process.cwd(), 'storage', 'videos');
 
-async function transcodeVideo(videoId: string, inputFilename: string) {
-  const inputPath = path.join(STORAGE_DIR, inputFilename);
-  const outputDir = path.join(STORAGE_DIR, videoId);
+async function transcodeVideo(videoId: string, filename: string) {
+  const inputPath = path.join(process.cwd(), 'storage', 'videos', filename);
+  const outputDir = path.join(process.cwd(), 'public', 'videos', videoId);
+  const outputPath = path.join(outputDir, 'master.m3u8');
 
   if (!fs.existsSync(inputPath)) {
     console.error(`Input file not found: ${inputPath}`);

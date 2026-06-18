@@ -39,7 +39,7 @@ export default function CoursePlayer({ courseData }: CoursePlayerProps) {
     const videoElement = videoRef.current;
     
     if (videoElement) {
-      const src = `/api/video/${activeVideo.id}/master.m3u8`;
+      const src = `/videos/${activeVideo.id}/master.m3u8`;
 
       if (Hls.isSupported()) {
         hls = new Hls({
