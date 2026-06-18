@@ -21,8 +21,6 @@ async function transcodeVideo(videoId: string, filename: string) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const outputPath = path.join(outputDir, 'master.m3u8');
-
   console.log(`Starting HLS conversion for ${videoId}...`);
 
   return new Promise((resolve, reject) => {
