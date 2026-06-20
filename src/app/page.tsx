@@ -43,20 +43,20 @@ export default function Home() {
     <div className="min-h-screen bg-primary-bg flex flex-col items-center py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-radial-glow font-sans gap-8">
       {/* Navbar Integration */}
       <Navbar onOpenCheckout={() => setIsCheckoutOpen(true)} />
-      
+
       {/* Background glow spots and rings */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full glow-emerald-spot pointer-events-none opacity-50" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full glow-orange-spot pointer-events-none opacity-40" />
-      
+
       <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
         <div className="w-[600px] h-[600px] border border-dashed border-white/10 rounded-full animate-[spin_180s_linear_infinite]" />
       </div>
 
       <div className="max-w-5xl w-full relative z-10 glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl mt-8">
-        
+
         {/* Main card two-column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12">
-          
+
           {/* Left Column: Checkout Card and Creator profile */}
           <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between">
             <div>
@@ -97,7 +97,7 @@ export default function Home() {
               <div className="p-4 rounded-2xl bg-secondary-bg/60 border border-white/5 flex gap-4 mb-6 items-start hover:border-accent/20 transition-colors duration-300">
                 <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-accent shrink-0">
                   <Image
-                    src="/creator.jpeg"
+                    src="/creator.png"
                     alt="Amit Maurya"
                     fill
                     sizes="56px"
@@ -241,7 +241,7 @@ export default function Home() {
                 <h3 className="text-xs font-display font-extrabold text-white uppercase tracking-wider mb-4 leading-normal">
                   Roadmap to Build & Monetize a Faceless YouTube Channel:
                 </h3>
-                
+
                 <ul className="flex flex-col gap-3">
                   {learnings.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-xs md:text-sm text-secondary-text leading-relaxed font-sans">
