@@ -35,6 +35,7 @@ export async function GET() {
       role: u.role,
       joinDate: u.createdAt,
       purchaseCount: purchaseCountsMap[u._id.toString()] || 0,
+      purchasedCourses: u.purchasedCourses || [],
     }));
 
     return NextResponse.json(formattedUsers);

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Search, ShieldCheck, Mail, Calendar, Eye, X, CreditCard, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/Providers";
+import { course } from "@/config/courseConfig";
 
 
 interface UserRecord {
@@ -14,6 +15,7 @@ interface UserRecord {
   role: "user" | "admin";
   joinDate: string;
   purchaseCount: number;
+  purchasedCourses: string[];
 }
 
 export default function AdminUsers() {
@@ -22,6 +24,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
+  const [accessLoading, setAccessLoading] = useState(false);
 
   async function fetchUsers() {
     try {
@@ -46,6 +49,33 @@ export default function AdminUsers() {
     const query = searchQuery.toLowerCase();
     return u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query);
   });
+
+  const handleToggleAccess = async (user: UserRecord, isGranted: boolean) => {
+    if (accessLoading) return;
+    setAccessLoading(true);
+    try {
+      const action = isGranted ? "revoke" : "grant";
+      const res = await fetch(`/api/admin/users/${user.id}/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, courseId: course.id })
+      });
+      
+      if (!res.ok) throw new Error("Failed to update access");
+      
+      const data = await res.json();
+      
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, purchasedCourses: data.purchasedCourses, purchaseCount: data.purchasedCourses.length } : u));
+      setSelectedUser({ ...user, purchasedCourses: data.purchasedCourses, purchaseCount: data.purchasedCourses.length });
+      
+      toast(`Access ${action === "grant" ? "granted" : "revoked"} successfully`, "success");
+    } catch (error) {
+      console.error(error);
+      toast("Failed to update user access", "error");
+    } finally {
+      setAccessLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-200">
@@ -248,16 +278,30 @@ export default function AdminUsers() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-[#0A0B1A] border border-white/5 text-[11px] leading-relaxed">
-                <strong className="text-white block mb-1">Assigned Course Vaults:</strong>
-                {selectedUser.purchaseCount > 0 ? (
-                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5 mt-1.5">
-                    ✓ youtube-course (YouTube Masterclass)
-                  </span>
-                ) : (
-                  <span className="text-secondary-text italic block mt-1.5">
-                    No active course enrollments.
-                  </span>
-                )}
+                <div className="flex justify-between items-center mb-2">
+                  <strong className="text-white block">Assigned Course Vaults:</strong>
+                </div>
+                
+                <div className="flex items-center justify-between mt-2 p-2 rounded bg-white/5 border border-white/10">
+                  <span className="text-white">{course.title}</span>
+                  {selectedUser.purchasedCourses?.includes(course.id) ? (
+                    <button 
+                      onClick={() => handleToggleAccess(selectedUser, true)}
+                      disabled={accessLoading}
+                      className="px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all font-bold cursor-pointer disabled:opacity-50"
+                    >
+                      {accessLoading ? "..." : "Revoke"}
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => handleToggleAccess(selectedUser, false)}
+                      disabled={accessLoading}
+                      className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all font-bold cursor-pointer disabled:opacity-50"
+                    >
+                      {accessLoading ? "..." : "Grant"}
+                    </button>
+                  )}
+                </div>
               </div>
 
               <button
