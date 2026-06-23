@@ -262,12 +262,16 @@ export default function AddToCart() {
 
             {/* Bottom policy links and footer reference */}
             <div className="border-t border-white/5 pt-6 mt-8 flex flex-col items-center gap-2">
-              <div className="flex items-center gap-4 text-2xs text-white/40 font-semibold font-display">
-                <Link href="#" className="hover:text-accent transition-colors">Terms & Conditions</Link>
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-2xs text-white/40 font-semibold font-display">
+                <Link href="/about" className="hover:text-accent transition-colors">About Us</Link>
                 <span>•</span>
-                <Link href="#" className="hover:text-accent transition-colors">Privacy Policy</Link>
+                <Link href="/contact" className="hover:text-accent transition-colors">Contact Us</Link>
                 <span>•</span>
-                <Link href="#" className="hover:text-accent transition-colors">Refund Policy</Link>
+                <Link href="/terms" className="hover:text-accent transition-colors">Terms & Conditions</Link>
+                <span>•</span>
+                <Link href="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link>
+                <span>•</span>
+                <Link href="/refund" className="hover:text-accent transition-colors">Refund Policy</Link>
               </div>
               <span className="text-[10px] text-white/25">Powered by CreatorLabs Funnels</span>
             </div>

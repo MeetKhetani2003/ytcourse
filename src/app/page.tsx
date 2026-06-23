@@ -287,12 +287,16 @@ export default function Home() {
 
             {/* Bottom policy links and footer reference */}
             <div className="border-t border-white/5 pt-6 mt-8 flex flex-col items-center gap-2.5">
-              <div className="flex items-center gap-4 text-2xs text-white/40 font-semibold font-display">
-                <a href="#" className="hover:text-accent transition-colors">Terms & Conditions</a>
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-2xs text-white/40 font-semibold font-display">
+                <Link href="/about" className="hover:text-accent transition-colors">About Us</Link>
                 <span>•</span>
-                <a href="#" className="hover:text-accent transition-colors">Privacy Policy</a>
+                <Link href="/contact" className="hover:text-accent transition-colors">Contact Us</Link>
                 <span>•</span>
-                <a href="#" className="hover:text-accent transition-colors">Refund Policy</a>
+                <Link href="/terms" className="hover:text-accent transition-colors">Terms & Conditions</Link>
+                <span>•</span>
+                <Link href="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link>
+                <span>•</span>
+                <Link href="/refund" className="hover:text-accent transition-colors">Refund Policy</Link>
               </div>
               <span className="text-[9px] text-white/25">Powered by CreatorLabs Funnels</span>
             </div>

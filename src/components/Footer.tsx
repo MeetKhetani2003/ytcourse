@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { businessConfig } from "@/config/businessConfig";
 
 export default function Footer() {
   return (
@@ -39,14 +41,18 @@ export default function Footer() {
 
         {/* Copyright info */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full border-t border-white/5 pt-8 mt-4 gap-4 text-secondary-text">
-          <span>© 2026 Faceless Mastery. All rights reserved.</span>
+          <span>© 2026 {businessConfig.name}. All rights reserved.</span>
           
-          <div className="flex items-center gap-4 text-white/50 text-xs">
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-white/50 text-xs">
+            <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
             <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link>
             <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">Refund Policy</a>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span>•</span>
+            <Link href="/refund" className="hover:text-white transition-colors">Refund Policy</Link>
           </div>
         </div>
 
